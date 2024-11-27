@@ -3,7 +3,6 @@ import re
 import random
 from bs4 import BeautifulSoup
 from datetime import datetime
-#from PIL import Image, ImageEnhance
 
 PLUGIN_UUID = "68eefdd3-c546-4542-aa2a-8f93ec1adedd"
 
@@ -21,15 +20,18 @@ lines = soup.find_all("a", class_="image")
 imageURLs = []
 for line in lines:
     linetext = line.attrs["href"]
-    linetext = re.sub('/revision.*$', '', linetext)
-    # USS = line.attrs["alt"]
-    # linetext = linetext + "|" + USS
-    imageURLs.append(linetext)
-    print(linetext)
+    if linetext.find("Queue") == -1:
+        linetext = re.sub('/revision.*$', '', linetext)
+        USS = line.next["alt"]
+        #print(USS)
+        linetext = linetext + "|" + USS
+        imageURLs.append(linetext)
 
 shipNumber = random.randint(0, len(imageURLs))
-shipURL = imageURLs[shipNumber]
+shipPieces = imageURLs[shipNumber].split("|")
+shipURL = shipPieces[0]
+shipName = shipPieces[1]
 
 url = "https://usetrmnl.com/api/custom_plugins/" + PLUGIN_UUID
-variables = {"merge_variables": {"shipURL": shipURL }}
+variables = {"merge_variables": {"shipURL": shipURL, "shipName": shipName }}
 result = requests.post(url, json=variables)
